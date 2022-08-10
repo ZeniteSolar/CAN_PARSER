@@ -92,7 +92,7 @@ int main()
     printf("test.motor.reverse: %d\n", test.motor.reverse);
 
     assert(CAN_SIGNATURE_MIC19 == test.signature);
-    assert(128 == test.d);
+    assert(129 == test.d);
     assert(255 == test.i);
     assert(1 == test.motor.motor_on);
     assert(0 == test.motor.dms_on);
