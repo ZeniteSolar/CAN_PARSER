@@ -1,5 +1,5 @@
 LIB_VERSION=`cat .lib_version`
-WEB_VERSION=`curl -s https://raw.githubusercontent.com/ZeniteSolar/CAN_IDS/master/.semver`
+WEB_VERSION=`curl https://raw.githubusercontent.com/ZeniteSolar/CAN_IDS/master/.semver`
 
 if [ $LIB_VERSION == $WEB_VERSION ]; then
     echo -e "\033[0;32mCan library is updated\033[0m"
@@ -10,7 +10,7 @@ else
     if [ "$answer" != "${answer#[Yy]}" ] ;then
         echo "Updating..."
         wget https://raw.githubusercontent.com/ZeniteSolar/CAN_IDS/master/can_ids.h -O can_ids.h
-        wget https://raw.githubusercontent.com/ZeniteSolar/CAN_IDS/master/can_parser.h -O can_parse.h
+        wget https://raw.githubusercontent.com/ZeniteSolar/CAN_IDS/master/can_parser_types.h -O can_parser_types.h
         wget https://raw.githubusercontent.com/ZeniteSolar/CAN_IDS/master/.semver -O .lib_version
     else 
         echo -e "\033[0;31mMantain can library out of date is unsafe!\033[0m"
