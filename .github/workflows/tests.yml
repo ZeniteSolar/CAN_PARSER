@@ -9,7 +9,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Compile tests
-      run: |
+      run:
         ./update_libs.sh -f && make tests
     - name: Run tests
       run: |
