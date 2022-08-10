@@ -1,9 +1,19 @@
+CC = gcc
 
-main : can_ids.h can_parse.h main.c 
-	gcc  main.c -I./ -o main
+SOURCES = can_ids.h can_parse.h main.c
+TARGET = main
 
-can_ids.h : 
-	wget https://raw.githubusercontent.com/ZeniteSolar/CAN_IDS/master/can_ids.h -O can_ids.h
+main : $(SOURCES)
+	$(CC)  $(SOURCES) -I./ -o $(TARGET)
 
-can_parse.h :
-	wget https://raw.githubusercontent.com/ZeniteSolar/CAN_IDS/master/can_parser.h -O can_parse.h
+can_ids.h : .lib_version
+	
+
+can_parse.h : .lib_version
+	
+
+.PHONY update:
+
+.lib_version : update
+	./update_libs.sh
+
