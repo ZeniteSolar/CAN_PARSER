@@ -10,7 +10,7 @@ jobs:
     - uses: actions/checkout@v1
     - name: Compile tests
       run: |
-        make tests
+        ./update_libs.sh -f && make tests
     - name: Run tests
       run: |
         ./tests
