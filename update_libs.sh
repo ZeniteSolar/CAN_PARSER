@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 download_libs () {
     echo "Updating..."
     wget  -q --show-progress https://raw.githubusercontent.com/ZeniteSolar/CAN_IDS/master/can_ids.h -O can_ids.h
