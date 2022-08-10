@@ -26,8 +26,13 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-
-LIB_VERSION=`cat .lib_version`
+if [ -f ".lib_version" ]; then
+    LIB_VERSION=`cat .lib_version`
+else
+    echo ".lib_version No such file or directory"
+    download_libs
+    exit 0
+fi
 WEB_VERSION=`curl -s https://raw.githubusercontent.com/ZeniteSolar/CAN_IDS/master/.semver`
 
 if [ $LIB_VERSION == $WEB_VERSION ]; then
