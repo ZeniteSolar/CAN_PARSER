@@ -79,9 +79,12 @@ typedef struct
 * Define the parser 
 */
 #define CAN_REGISTER_PARSER(NAME)                                     \
+void can_parse_topics(const can_topics_t *topics, can_msg_t *msg);    \
+void can_parse_##NAME(can_msg_t *msg) ;                               \
+                                                                      \
     void can_parse_topics(const can_topics_t *topics, can_msg_t *msg) \
     {                                                                 \
-        for (uint8_t i; i < topics->size; i++)                        \
+        for (uint8_t i = 0; i < topics->size; i++)                    \
         {                                                             \
             if (topics->topics[i].id == msg->id)                      \
             {                                                         \
@@ -98,7 +101,7 @@ typedef struct
     void can_parse_##NAME(can_msg_t *msg)                             \
     {                                                                 \
                                                                       \
-        for (uint8_t i; i < can_modules.size; i++)                    \
+        for (uint8_t i = 0; i < can_modules.size; i++)                \
         {                                                             \
             if (can_modules.module[i].signature == msg->signature)    \
             {                                                         \
@@ -107,7 +110,8 @@ typedef struct
             }                                                         \
             if (i == (can_modules.size - 1))                          \
             {                                                         \
-                printf("Unrecognized module!");                       \
+                printf("Unrecognized module! with signature %d"       \
+                    ,can_modules.module[i].signature);                \
             }                                                         \
         }                                                             \
     };
