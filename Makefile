@@ -1,9 +1,9 @@
 CC = gcc
 
-SOURCES = can_ids.h can_parse.h main.c
-TARGET = main
+SOURCES = can_ids.h can_parser.h tests.c
+TARGET = tests
 
-main : $(SOURCES)
+$(TARGET) : $(SOURCES)
 	$(CC)  $(SOURCES) -I./ -o $(TARGET)
 
 can_ids.h : .lib_version
