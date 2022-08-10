@@ -10,8 +10,8 @@ FORCE=0
 while [[ $# -gt 0 ]]; do
   case $1 in
     -f|--force)
-        FORCE=1
-        shift
+        download_libs
+        exit 0
         ;;
     -h|--help)
         echo "Usage: ./update_libs.sh [OPTION]"
@@ -26,10 +26,6 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-if [[ $FORCE -eq 1 ]]; then
-    download_libs
-    exit 0
-fi
 
 LIB_VERSION=`cat .lib_version`
 WEB_VERSION=`curl -s https://raw.githubusercontent.com/ZeniteSolar/CAN_IDS/master/.semver`
