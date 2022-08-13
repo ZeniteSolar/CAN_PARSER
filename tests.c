@@ -73,10 +73,10 @@ CAN_REGISTER_TOPICS(mswi,
                     {CAN_MSG_MSWI19_STATE_ID, &parse_mswi_state},
                     {CAN_MSG_MSWI19_MOTOR_ID, &parse_mswi_motor});
 
-CAN_REGISTER_MODULES({CAN_SIGNATURE_MIC19, &CAN_TOPICS_NAME(mic)},
-                     {CAN_SIGNATURE_MSWI19, &CAN_TOPICS_NAME(mswi)});
+CAN_REGISTER_MODULES({CAN_SIGNATURE_MIC19, &CAN_TOPICS_NAME(mic), CAN_SET_TIMEOUT(1)},
+                     {CAN_SIGNATURE_MSWI19, &CAN_TOPICS_NAME(mswi), CAN_SET_TIMEOUT(1)});
 
-CAN_REGISTER_PARSER(mam);
+CAN_REGISTER_PARSER(mam, 10U);
 
 int main(void)
 {
