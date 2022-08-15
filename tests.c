@@ -6,6 +6,8 @@
 #include "can_ids.h"
 #include "can_parser.h"
 
+uint32_t timeout = 0;
+
 struct test_mic_t
 {
     uint8_t signature; // Senders signature. Units:
@@ -73,20 +75,74 @@ CAN_REGISTER_TOPICS(mswi,
                     {CAN_MSG_MSWI19_STATE_ID, &parse_mswi_state},
                     {CAN_MSG_MSWI19_MOTOR_ID, &parse_mswi_motor});
 
-CAN_REGISTER_MODULES({CAN_SIGNATURE_MIC19, &CAN_TOPICS_NAME(mic)},
-                     {CAN_SIGNATURE_MSWI19, &CAN_TOPICS_NAME(mswi)});
+CAN_REGISTER_MODULES({CAN_SIGNATURE_MIC19, &CAN_TOPICS_NAME(mic), 100},
+                     {CAN_SIGNATURE_MSWI19, &CAN_TOPICS_NAME(mswi), 100});
 
-CAN_REGISTER_PARSER(mam);
+// CAN_REGISTER_PARSER(mam);
+#define F_CLK 1
+void can_parse_topics(const can_topics_t *topics, can_msg_t *msg);
+void can_parse_mam(can_msg_t *msg);
+void can_check_timeout(uint32_t *time_without_messages, const can_module_t *module);
+void can_handle_timeout(uint8_t signature);
 
-int main(void)
+void can_parse_topics(const can_topics_t *topics, can_msg_t *msg)
+{
+    for (uint8_t i = 0; i < topics->size; i++)
+    {
+        if (topics->topics[i].id == msg->id)
+        {
+            topics->topics[i].parse(msg);
+            break; /* topics dont have more than one id*/
+        }
+        if (i == (topics->size - 1))
+        {
+            printf("Unrecognized topic! of id %d\n", msg->id);
+        }
+    }
+}
+
+void can_parse_mam(can_msg_t *msg)
+{
+    uint32_t time_without_messages[sizeof(_can_modules)/sizeof(can_module_t)];
+
+    for (uint8_t i = 0; i < can_modules.size; i++)
+    {
+        if (can_modules.module[i].signature == msg->signature)
+        {
+            can_parse_topics(can_modules.module[i].topics, msg);
+        }
+        else
+        {
+            can_check_timeout(&time_without_messages[i], &can_modules.module[i]);
+        }
+    }
+};
+
+void can_check_timeout(uint32_t *time_without_messages, const can_module_t *module)
+{
+    if (++*time_without_messages >= module->timeout * F_CLK)
+    {
+        printf("timeour of module with signature %d", module->signature);
+        *time_without_messages = 0;
+        can_handle_timeout(module->signature);
+    }
+}
+
+void can_handle_timeout(uint8_t signature)
+{
+    if (signature == CAN_SIGNATURE_MIC19)
+        timeout = 1;
+}
+
+void test_msg_parsing(void)
 {
 
-    /*
-     *   Test case MIC -> MAM msg
-     */
     can_msg_t msg;
     for (int i = 0; i <= 255; i++)
     {
+        /*
+        *   Test case MIC -> MAM msg
+        */
         msg.raw[CAN_MSG_GENERIC_STATE_SIGNATURE_BYTE] = CAN_SIGNATURE_MIC19;
         msg.raw[CAN_MSG_MIC19_MOTOR_D_BYTE] = i;
         msg.raw[CAN_MSG_MIC19_MOTOR_I_BYTE] = 255 - i;
@@ -119,6 +175,10 @@ int main(void)
         assert(((i % 2) == 0) == test_mic.motor.dms_on);
         assert(((i % 2) != 0) == test_mic.motor.reverse);
 
+        /*
+        *   Test case MSWI -> MAM msg
+        */
+
         msg.id = CAN_MSG_MSWI19_MOTOR_ID;
 
         msg.raw[CAN_MSG_GENERIC_STATE_SIGNATURE_BYTE] = CAN_SIGNATURE_MSWI19;
@@ -146,4 +206,32 @@ int main(void)
         assert(((i % 2) == 0) == test_mswi.motor.motor_on);
         assert(((i % 2) != 0) == test_mswi.motor.dms_on);
     }
+}
+
+void test_timeout(void)
+{
+    can_msg_t msg;
+    for (int i = 1; i <= 100; i++)
+    {
+        msg.signature = CAN_SIGNATURE_MSWI19;
+        
+        can_parse_mam(&msg);
+
+        // Testing if timeout_handler is triggered in 100
+        printf("i: %d\n", i);
+        if(i >= 100)
+        {
+            assert(timeout == 1);
+            timeout = 0;
+        }else
+        {
+            assert(timeout == 0);
+        }
+
+    }
+}
+
+int main(void)
+{
+    test_timeout();
 }
