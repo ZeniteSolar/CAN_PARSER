@@ -109,6 +109,7 @@ void can_parse_mam(can_msg_t *msg)
     {
         if (can_modules.module[i].signature == msg->signature)
         {
+            time_without_messages[i] = 0;
             can_parse_topics(can_modules.module[i].topics, msg);
         }
         else
@@ -122,7 +123,7 @@ void can_check_timeout(uint32_t *time_without_messages, const can_module_t *modu
 {
     if (++*time_without_messages >= module->timeout * F_CLK)
     {
-        printf("timeour of module with signature %d", module->signature);
+        printf("timeout of module with signature %d\n", module->signature);
         *time_without_messages = 0;
         can_handle_timeout(module->signature);
     }
@@ -211,6 +212,8 @@ void test_msg_parsing(void)
 void test_timeout(void)
 {
     can_msg_t msg;
+    printf("\n==> Testing if timeout is triggered\n");
+    timeout = 0;
     for (int i = 1; i <= 100; i++)
     {
         msg.signature = CAN_SIGNATURE_MSWI19;
@@ -228,6 +231,21 @@ void test_timeout(void)
             assert(timeout == 0);
         }
 
+    }
+    printf("\n==>Testing if timeout have false triggers\n");
+    //Test if timeout have false triggers
+    timeout = 0;
+    for (int i = 1; i <= 1000; i++)
+    {
+        msg.signature = CAN_SIGNATURE_MSWI19;
+        
+        can_parse_mam(&msg);
+        
+        msg.signature = CAN_SIGNATURE_MIC19;
+        
+        can_parse_mam(&msg);
+        printf("i: %d", i);
+        assert(timeout == 0);
     }
 }
 
