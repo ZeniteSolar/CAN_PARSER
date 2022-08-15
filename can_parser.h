@@ -33,6 +33,8 @@ typedef struct
     {
         uint8_t signature;
         const can_topics_t *topics;
+        const uint32_t timeout // Time that has to pass without messages 
+                                //(should be in seconds if the parser is called periodically and this frequency is set when parser was registered)
     };
 } can_module_t;
 
@@ -42,6 +44,9 @@ typedef struct
     const can_module_t *module;
 } can_modules_t;
 
+/*
+ *   can topics namespace
+ */
 #define CAN_TOPICS_NAME(NAME) CAN_TOPICS_##NAME
 
 /*
@@ -64,9 +69,10 @@ typedef struct
         .topics = CAN_TOPIC_##NAME,                             \
     }
 /*
-*   Register a new group of modules 
-* all modules have a hash (signature) and a topic 
-*/
+ *   Register a new group of modules
+ * all modules have a hash (signature) and a group of topics
+ * Example: CAN_REGISTER_MODULES({signature, &topics, seconds to timeout})
+ */
 #define CAN_REGISTER_MODULES(...)                                \
     const can_module_t _can_modules[] = {                        \
         __VA_ARGS__};                                            \
@@ -76,8 +82,10 @@ typedef struct
             .module = _can_modules,                              \
     }
 /*
-* Define the parser 
-*/
+ * Define the parser
+ * \param NAME is the name of the parser
+ * \param F_CLK is the frequecny that the parser will be called by the user(it is used to calculate timeouts)
+ */
 #define CAN_REGISTER_PARSER(NAME)                                     \
 void can_parse_topics(const can_topics_t *topics, can_msg_t *msg);    \
 void can_parse_##NAME(can_msg_t *msg) ;                               \
