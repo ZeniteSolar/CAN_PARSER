@@ -24,7 +24,7 @@ struct test_mic_t test_mic;
 static void parse_mic_state(can_msg_t *msg)
 {
 
-    printf("mic state");
+    printf("mic state\n");
 }
 static void parse_mic_motor(can_msg_t *msg)
 {
@@ -40,7 +40,7 @@ static void parse_mic_motor(can_msg_t *msg)
 
 static void parse_mswi_state(can_msg_t *msg)
 {
-    printf("mswi state");
+    printf("mswi state\n");
 }
 
 struct test_mswi_t

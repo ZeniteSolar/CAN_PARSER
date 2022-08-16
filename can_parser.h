@@ -44,20 +44,23 @@ typedef struct
     const can_module_t *module;
 } can_modules_t;
 
+/*
+ *   can topics namespace
+ */
 #define CAN_TOPICS_NAME(NAME) CAN_TOPICS_##NAME
 
 /*
-*  Cast messsage pointer to type TYPE and declare with name NAME
-*/
-#define CAN_DECLARE_MSG_OF_TYPE(TYPE, NAME, MSG)  \
-   if (MSG == NULL || MSG->data == NULL)\
-        return;\
+ *  Cast messsage pointer to type TYPE and declare with name NAME
+ */
+#define CAN_DECLARE_MSG_OF_TYPE(TYPE, NAME, MSG) \
+    if (MSG == NULL || MSG->data == NULL)        \
+        return;                                  \
     TYPE *NAME = (TYPE *)(void *)msg->raw
 
 /*
-*   Register a new group of topics, 
-* all topics have a hash (id) and a callback (parse)
-*/
+ *   Register a new group of topics,
+ * all topics have a hash (id) and a callback (parse)
+ */
 #define CAN_REGISTER_TOPICS(NAME, ...)                          \
     const can_topic_t CAN_TOPIC_##NAME[] = {                    \
         __VA_ARGS__};                                           \
@@ -66,10 +69,10 @@ typedef struct
         .topics = CAN_TOPIC_##NAME,                             \
     }
 /*
-*   Register a new group of modules 
+ *   Register a new group of modules
  * all modules have a hash (signature) and a group of topics
  * Example: CAN_REGISTER_MODULES({signature, &topics, seconds to timeout})
-*/
+ */
 #define CAN_REGISTER_MODULES(...)                                \
     const can_module_t _can_modules[] = {                        \
         __VA_ARGS__};                                            \
@@ -79,16 +82,16 @@ typedef struct
             .module = _can_modules,                              \
     }
 /*
-* Define the parser 
+ * Define the parser
  * \param NAME is the name of the parser
  * \param F_CLK is the frequecny that the parser will be called by the user(it is used to calculate timeouts)
-*/
+ */
 #define CAN_REGISTER_PARSER(NAME, F_CLK)                                                          \
     void can_parse_topics(const can_topics_t *topics, can_msg_t *msg);                            \
     void can_parse_##NAME(can_msg_t *msg);                                                        \
     void can_check_timeout(uint32_t *time_without_messages, const can_module_t *module);          \
     void can_handle_timeout(uint8_t signature);                                                   \
-                                                                      \
+                                                                                                  \
     void can_parse_topics(const can_topics_t *topics, can_msg_t *msg)                             \
     {                                                                                             \
         for (uint8_t i = 0; i < topics->size; i++)                                                \
@@ -123,10 +126,10 @@ typedef struct
             }                                                                                     \
         }                                                                                         \
     };                                                                                            \
-                                                                      \
+                                                                                                  \
     void can_check_timeout(uint32_t *time_without_messages, const can_module_t *module)           \
     {                                                                                             \
-                                                                      \
+                                                                                                  \
         if (++*time_without_messages >= module->timeout * F_CLK)                                  \
         {                                                                                         \
             printf("timeout of module with signature %d\n", module->signature);                   \
