@@ -78,56 +78,7 @@ CAN_REGISTER_TOPICS(mswi,
 CAN_REGISTER_MODULES({CAN_SIGNATURE_MIC19, &CAN_TOPICS_NAME(mic), 100},
                      {CAN_SIGNATURE_MSWI19, &CAN_TOPICS_NAME(mswi), 100});
 
-// CAN_REGISTER_PARSER(mam);
-#define F_CLK 1
-void can_parse_topics(const can_topics_t *topics, can_msg_t *msg);
-void can_parse_mam(can_msg_t *msg);
-void can_check_timeout(uint32_t *time_without_messages, const can_module_t *module);
-void can_handle_timeout(uint8_t signature);
-
-void can_parse_topics(const can_topics_t *topics, can_msg_t *msg)
-{
-    for (uint8_t i = 0; i < topics->size; i++)
-    {
-        if (topics->topics[i].id == msg->id)
-        {
-            topics->topics[i].parse(msg);
-            break; /* topics dont have more than one id*/
-        }
-        if (i == (topics->size - 1))
-        {
-            printf("Unrecognized topic! of id %d\n", msg->id);
-        }
-    }
-}
-
-void can_parse_mam(can_msg_t *msg)
-{
-    uint32_t time_without_messages[sizeof(_can_modules)/sizeof(can_module_t)];
-
-    for (uint8_t i = 0; i < can_modules.size; i++)
-    {
-        if (can_modules.module[i].signature == msg->signature)
-        {
-            time_without_messages[i] = 0;
-            can_parse_topics(can_modules.module[i].topics, msg);
-        }
-        else
-        {
-            can_check_timeout(&time_without_messages[i], &can_modules.module[i]);
-        }
-    }
-};
-
-void can_check_timeout(uint32_t *time_without_messages, const can_module_t *module)
-{
-    if (++*time_without_messages >= module->timeout * F_CLK)
-    {
-        printf("timeout of module with signature %d\n", module->signature);
-        *time_without_messages = 0;
-        can_handle_timeout(module->signature);
-    }
-}
+CAN_REGISTER_PARSER(mam, 1);
 
 void can_handle_timeout(uint8_t signature)
 {

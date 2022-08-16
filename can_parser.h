@@ -33,14 +33,14 @@ typedef struct
     {
         uint8_t signature;
         const can_topics_t *topics;
-        const uint32_t timeout // Time that has to pass without messages 
+        const uint32_t timeout; // Time that has to pass without messages
                                 //(should be in seconds if the parser is called periodically and this frequency is set when parser was registered)
     };
 } can_module_t;
 
 typedef struct
 {
-    uint8_t size;
+    const uint8_t size;
     const can_module_t *module;
 } can_modules_t;
 
@@ -52,9 +52,9 @@ typedef struct
 /*
 *  Cast messsage pointer to type TYPE and declare with name NAME
 */
-#define CAN_DECLARE_MSG_OF_TYPE(TYPE, NAME, MSG)  \
-   if (MSG == NULL || MSG->data == NULL)\
-        return;\
+#define CAN_DECLARE_MSG_OF_TYPE(TYPE, NAME, MSG) \
+    if (MSG == NULL || MSG->data == NULL)        \
+        return;                                  \
     TYPE *NAME = (TYPE *)(void *)msg->raw
 
 /*
@@ -86,40 +86,54 @@ typedef struct
  * \param NAME is the name of the parser
  * \param F_CLK is the frequecny that the parser will be called by the user(it is used to calculate timeouts)
  */
-#define CAN_REGISTER_PARSER(NAME)                                     \
-void can_parse_topics(const can_topics_t *topics, can_msg_t *msg);    \
-void can_parse_##NAME(can_msg_t *msg) ;                               \
+#define CAN_REGISTER_PARSER(NAME, F_CLK)                                                          \
+    void can_parse_topics(const can_topics_t *topics, can_msg_t *msg);                            \
+    void can_parse_##NAME(can_msg_t *msg);                                                        \
+    void can_check_timeout(uint32_t *time_without_messages, const can_module_t *module);          \
+    void can_handle_timeout(uint8_t signature);                                                   \
                                                                       \
-    void can_parse_topics(const can_topics_t *topics, can_msg_t *msg) \
-    {                                                                 \
-        for (uint8_t i = 0; i < topics->size; i++)                    \
-        {                                                             \
-            if (topics->topics[i].id == msg->id)                      \
-            {                                                         \
-                topics->topics[i].parse(msg);                         \
-                break; /* topics dont have more than one id*/         \
-            }                                                         \
-            if (i == (topics->size - 1))                              \
-            {                                                         \
-                printf("Unrecognized topic!");                        \
-            }                                                         \
-        }                                                             \
-    }                                                                 \
+    void can_parse_topics(const can_topics_t *topics, can_msg_t *msg)                             \
+    {                                                                                             \
+        for (uint8_t i = 0; i < topics->size; i++)                                                \
+        {                                                                                         \
+            if (topics->topics[i].id == msg->id)                                                  \
+            {                                                                                     \
+                topics->topics[i].parse(msg);                                                     \
+                break; /* topics dont have more than one id*/                                     \
+            }                                                                                     \
+            if (i == (topics->size - 1))                                                          \
+            {                                                                                     \
+                printf("Unrecognized topic! of id %d\n", msg->id);                                \
+            }                                                                                     \
+        }                                                                                         \
+    }                                                                                             \
+                                                                                                  \
+    void can_parse_mam(can_msg_t *msg)                                                            \
+    {                                                                                             \
+        static uint32_t time_without_messages[sizeof(_can_modules) / sizeof(can_module_t)] = {0}; \
+                                                                                                  \
+        for (uint8_t i = 0; i < can_modules.size; i++)                                            \
+        {                                                                                         \
+                                                                                                  \
+            if (can_modules.module[i].signature == msg->signature)                                \
+            {                                                                                     \
+                time_without_messages[i] = 0;                                                     \
+                can_parse_topics(can_modules.module[i].topics, msg);                              \
+            }                                                                                     \
+            else                                                                                  \
+            {                                                                                     \
+                can_check_timeout(&time_without_messages[i], &can_modules.module[i]);             \
+            }                                                                                     \
+        }                                                                                         \
+    };                                                                                            \
                                                                       \
-    void can_parse_##NAME(can_msg_t *msg)                             \
-    {                                                                 \
+    void can_check_timeout(uint32_t *time_without_messages, const can_module_t *module)           \
+    {                                                                                             \
                                                                       \
-        for (uint8_t i = 0; i < can_modules.size; i++)                \
-        {                                                             \
-            if (can_modules.module[i].signature == msg->signature)    \
-            {                                                         \
-                can_parse_topics(can_modules.module[i].topics, msg);  \
-                break; /* message dont have more than one module*/    \
-            }                                                         \
-            if (i == (can_modules.size - 1))                          \
-            {                                                         \
-                printf("Unrecognized module! with signature %d"       \
-                    ,can_modules.module[i].signature);                \
-            }                                                         \
-        }                                                             \
-    };
+        if (++*time_without_messages >= module->timeout * F_CLK)                                  \
+        {                                                                                         \
+            printf("timeout of module with signature %d\n", module->signature);                   \
+            *time_without_messages = 0;                                                           \
+            can_handle_timeout(module->signature);                                                \
+        }                                                                                         \
+    }
