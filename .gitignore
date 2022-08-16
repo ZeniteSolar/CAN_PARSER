@@ -3,6 +3,7 @@ can_ids.h
 can_parser_types.h
 .lib_version
 tests
+.vscode/*
 
 # Prerequisites
 *.d
