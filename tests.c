@@ -6,6 +6,8 @@
 #include "can_ids.h"
 #include "can_parser.h"
 
+uint32_t timeout = 0;
+
 struct test_mic_t
 {
     uint8_t signature; // Senders signature. Units:
@@ -84,15 +86,15 @@ void can_handle_timeout(uint8_t signature)
         timeout = 1;
 }
 
-int main(void)
+void test_msg_parsing(void)
 {
 
-    /*
-     *   Test case MIC -> MAM msg
-     */
     can_msg_t msg;
     for (int i = 0; i <= 255; i++)
     {
+        /*
+         *   Test case MIC -> MAM msg
+         */
         msg.raw[CAN_MSG_GENERIC_STATE_SIGNATURE_BYTE] = CAN_SIGNATURE_MIC19;
         msg.raw[CAN_MSG_MIC19_MOTOR_D_BYTE] = i;
         msg.raw[CAN_MSG_MIC19_MOTOR_I_BYTE] = 255 - i;
@@ -125,6 +127,10 @@ int main(void)
         assert(((i % 2) == 0) == test_mic.motor.dms_on);
         assert(((i % 2) != 0) == test_mic.motor.reverse);
 
+        /*
+         *   Test case MSWI -> MAM msg
+         */
+
         msg.id = CAN_MSG_MSWI19_MOTOR_ID;
 
         msg.raw[CAN_MSG_GENERIC_STATE_SIGNATURE_BYTE] = CAN_SIGNATURE_MSWI19;
@@ -152,4 +158,51 @@ int main(void)
         assert(((i % 2) == 0) == test_mswi.motor.motor_on);
         assert(((i % 2) != 0) == test_mswi.motor.dms_on);
     }
+}
+
+void test_timeout(void)
+{
+    can_msg_t msg;
+    msg.id = CAN_MSG_GENERIC_STATE_ID;
+    printf("\n==> Testing if timeout is triggered\n");
+    timeout = 0;
+    for (int i = 1; i <= 100; i++)
+    {
+        msg.signature = CAN_SIGNATURE_MSWI19;
+
+        can_parse_mam(&msg);
+
+        // Testing if timeout_handler is triggered in 100
+        printf("i: %d\n", i);
+        if (i == 100)
+        {
+            assert(timeout == 1);
+            timeout = 0;
+        }
+        else
+        {
+            assert(timeout == 0);
+        }
+    }
+    printf("\n==>Testing if timeout have false triggers\n");
+    // Test if timeout have false triggers
+    timeout = 0;
+    for (int i = 1; i <= 1000; i++)
+    {
+        msg.signature = CAN_SIGNATURE_MSWI19;
+
+        can_parse_mam(&msg);
+
+        msg.signature = CAN_SIGNATURE_MIC19;
+
+        can_parse_mam(&msg);
+        printf("i: %d\n", i);
+        assert(timeout == 0);
+    }
+}
+
+int main(void)
+{
+    test_timeout();
+    test_msg_parsing();
 }
