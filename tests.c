@@ -26,7 +26,7 @@ struct test_mic_t test_mic;
 static void parse_mic_state(can_msg_t *msg)
 {
 
-    printf("mic state");
+    printf("mic state\n");
 }
 static void parse_mic_motor(can_msg_t *msg)
 {
@@ -42,7 +42,7 @@ static void parse_mic_motor(can_msg_t *msg)
 
 static void parse_mswi_state(can_msg_t *msg)
 {
-    printf("mswi state");
+    printf("mswi state\n");
 }
 
 struct test_mswi_t
@@ -93,8 +93,8 @@ void test_msg_parsing(void)
     for (int i = 0; i <= 255; i++)
     {
         /*
-        *   Test case MIC -> MAM msg
-        */
+         *   Test case MIC -> MAM msg
+         */
         msg.raw[CAN_MSG_GENERIC_STATE_SIGNATURE_BYTE] = CAN_SIGNATURE_MIC19;
         msg.raw[CAN_MSG_MIC19_MOTOR_D_BYTE] = i;
         msg.raw[CAN_MSG_MIC19_MOTOR_I_BYTE] = 255 - i;
@@ -128,8 +128,8 @@ void test_msg_parsing(void)
         assert(((i % 2) != 0) == test_mic.motor.reverse);
 
         /*
-        *   Test case MSWI -> MAM msg
-        */
+         *   Test case MSWI -> MAM msg
+         */
 
         msg.id = CAN_MSG_MSWI19_MOTOR_ID;
 
@@ -163,39 +163,40 @@ void test_msg_parsing(void)
 void test_timeout(void)
 {
     can_msg_t msg;
+    msg.id = CAN_MSG_GENERIC_STATE_ID;
     printf("\n==> Testing if timeout is triggered\n");
     timeout = 0;
     for (int i = 1; i <= 100; i++)
     {
         msg.signature = CAN_SIGNATURE_MSWI19;
-        
+
         can_parse_mam(&msg);
 
         // Testing if timeout_handler is triggered in 100
         printf("i: %d\n", i);
-        if(i >= 100)
+        if (i >= 100)
         {
             assert(timeout == 1);
             timeout = 0;
-        }else
+        }
+        else
         {
             assert(timeout == 0);
         }
-
     }
     printf("\n==>Testing if timeout have false triggers\n");
-    //Test if timeout have false triggers
+    // Test if timeout have false triggers
     timeout = 0;
     for (int i = 1; i <= 1000; i++)
     {
         msg.signature = CAN_SIGNATURE_MSWI19;
-        
+
         can_parse_mam(&msg);
-        
+
         msg.signature = CAN_SIGNATURE_MIC19;
-        
+
         can_parse_mam(&msg);
-        printf("i: %d", i);
+        printf("i: %d\n", i);
         assert(timeout == 0);
     }
 }
