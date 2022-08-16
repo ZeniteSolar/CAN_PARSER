@@ -174,7 +174,7 @@ void test_timeout(void)
 
         // Testing if timeout_handler is triggered in 100
         printf("i: %d\n", i);
-        if (i >= 100)
+        if (i == 100)
         {
             assert(timeout == 1);
             timeout = 0;
@@ -204,4 +204,5 @@ void test_timeout(void)
 int main(void)
 {
     test_timeout();
+    test_msg_parsing();
 }
