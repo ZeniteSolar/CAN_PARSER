@@ -33,7 +33,7 @@ else
     download_libs
     exit 0
 fi
-WEB_VERSION=`curl -s https://raw.githubusercontent.com/ZeniteSolar/CAN_IDS/master/.semver`
+WEB_VERSION=`curl -s --connect-timeout 1 https://raw.githubusercontent.com/ZeniteSolar/CAN_IDS/master/.semver`
 
 if [ $LIB_VERSION == $WEB_VERSION ]; then
     echo -e "\033[0;32mCan library is updated\033[0m"
