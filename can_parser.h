@@ -68,9 +68,9 @@ typedef struct
  * all topics have a hash (id) and a callback (parse)
  */
 #define CAN_REGISTER_TOPICS(NAME, ...)                          \
-    const can_topic_t CAN_TOPIC_##NAME[] = {                    \
+    static const can_topic_t CAN_TOPIC_##NAME[] = {             \
         __VA_ARGS__};                                           \
-    const can_topics_t CAN_TOPICS_NAME(NAME) = {                \
+    static const can_topics_t CAN_TOPICS_NAME(NAME) = {         \
         .size = sizeof(CAN_TOPIC_##NAME) / sizeof(can_topic_t), \
         .topics = CAN_TOPIC_##NAME,                             \
     }
@@ -79,15 +79,15 @@ typedef struct
  * all modules have a hash (signature) and a group of topics
  * Example: CAN_REGISTER_MODULES({signature, &CAN_TOPICS_NAME(topics), seconds to timeout})
  */
-#define CAN_REGISTER_MODULES(NAME, ...)                                                         \
-    const can_module_t _can_modules_##NAME[] = {                                                \
-        __VA_ARGS__};                                                                           \
-    uint32_t _time_without_messages_##NAME[sizeof(_can_modules_##NAME) / sizeof(can_module_t)]; \
-    can_modules_t CAN_MODULES_NAME(NAME) =                                                      \
-        {                                                                                       \
-            .size = sizeof(_can_modules_##NAME) / sizeof(can_module_t),                         \
-            .module = _can_modules_##NAME,                                                      \
-            .time_without_messages = _time_without_messages_##NAME,                             \
+#define CAN_REGISTER_MODULES(NAME, ...)                                                                \
+    static const can_module_t _can_modules_##NAME[] = {                                                \
+        __VA_ARGS__};                                                                                  \
+    static uint32_t _time_without_messages_##NAME[sizeof(_can_modules_##NAME) / sizeof(can_module_t)]; \
+    static can_modules_t CAN_MODULES_NAME(NAME) =                                                      \
+        {                                                                                              \
+            .size = sizeof(_can_modules_##NAME) / sizeof(can_module_t),                                \
+            .module = _can_modules_##NAME,                                                             \
+            .time_without_messages = _time_without_messages_##NAME,                                    \
     }
 /*
  * Define the parser
