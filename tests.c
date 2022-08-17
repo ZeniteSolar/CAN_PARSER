@@ -169,7 +169,7 @@ void test_timeout(void)
     for (int i = 1; i <= 100; i++)
     {
         msg.signature = CAN_SIGNATURE_MSWI19;
-
+        can_update_timeout();
         can_parse_mam(&msg);
 
         // Testing if timeout_handler is triggered in 100
@@ -190,7 +190,7 @@ void test_timeout(void)
     for (int i = 1; i <= 1000; i++)
     {
         msg.signature = CAN_SIGNATURE_MSWI19;
-
+        can_update_timeout();
         can_parse_mam(&msg);
 
         msg.signature = CAN_SIGNATURE_MIC19;
