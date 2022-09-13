@@ -43,7 +43,7 @@ can_parse.h : .lib_version
 	
 .PHONY : tests 
 
-SOURCES = can_ids.h can_parser.h tests.c
+SOURCES = can_ids.h can_parser.h tests.c can_parser.c
 TARGET = tests
 
 $(TARGET) : $(SOURCES)

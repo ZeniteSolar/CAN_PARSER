@@ -75,10 +75,8 @@ CAN_REGISTER_TOPICS(mswi,
                     {CAN_MSG_MSWI19_STATE_ID, &parse_mswi_state},
                     {CAN_MSG_MSWI19_MOTOR_ID, &parse_mswi_motor});
 
-CAN_REGISTER_MODULES(mam_rx, {CAN_SIGNATURE_MIC19, &CAN_TOPICS_NAME(mic), 100},
+CAN_REGISTER_MODULES(mam_rx, 1, {CAN_SIGNATURE_MIC19, &CAN_TOPICS_NAME(mic), 100},
                      {CAN_SIGNATURE_MSWI19, &CAN_TOPICS_NAME(mswi), 100});
-
-CAN_REGISTER_PARSER(1);
 
 void can_handle_timeout(uint8_t signature)
 {
@@ -111,7 +109,7 @@ void test_msg_parsing(void)
 
         printf("parsing %d ...\n", msg.signature);
 
-        can_parser(&CAN_MODULES_NAME(mam_rx), &msg);
+        can_parser(&CAN_PARSER_NAME(mam_rx), &msg);
 
         printf("test_mic.signature: %d\n", test_mic.signature);
         printf("test_mic.d: %d\n", test_mic.d);
@@ -144,7 +142,7 @@ void test_msg_parsing(void)
 
         printf("parsing %d ...\n", msg.signature);
 
-        can_parser(&CAN_MODULES_NAME(mam_rx), &msg);
+        can_parser(&CAN_PARSER_NAME(mam_rx), &msg);
 
         printf("test_mswi.signature: %d\n", test_mswi.signature);
         printf("test_mswi.d: %d\n", test_mswi.d);
@@ -169,8 +167,8 @@ void test_timeout(void)
     for (int i = 1; i <= 100; i++)
     {
         msg.signature = CAN_SIGNATURE_MSWI19;
-        can_update_timeout(&CAN_MODULES_NAME(mam_rx));
-        can_parser(&CAN_MODULES_NAME(mam_rx), &msg);
+        can_update_timeout(&CAN_PARSER_NAME(mam_rx));
+        can_parser(&CAN_PARSER_NAME(mam_rx), &msg);
 
         // Testing if timeout_handler is triggered in 100
         printf("i: %d\n", i);
@@ -190,12 +188,12 @@ void test_timeout(void)
     for (int i = 1; i <= 1000; i++)
     {
         msg.signature = CAN_SIGNATURE_MSWI19;
-        can_update_timeout(&CAN_MODULES_NAME(mam_rx));
-        can_parser(&CAN_MODULES_NAME(mam_rx), &msg);
+        can_update_timeout(&CAN_PARSER_NAME(mam_rx));
+        can_parser(&CAN_PARSER_NAME(mam_rx), &msg);
 
         msg.signature = CAN_SIGNATURE_MIC19;
 
-        can_parser(&CAN_MODULES_NAME(mam_rx), &msg);
+        can_parser(&CAN_PARSER_NAME(mam_rx), &msg);
         printf("i: %d\n", i);
         assert(timeout == 0);
     }
