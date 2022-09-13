@@ -57,14 +57,6 @@ typedef struct
 #define CAN_PARSER_NAME(NAME) CAN_PARSER_##NAME
 
 /*
- *  Cast messsage pointer to type TYPE and declare with name NAME
- */
-#define CAN_DECLARE_MSG_OF_TYPE(TYPE, NAME, MSG) \
-    if (MSG == NULL || MSG->data == NULL)        \
-        return;                                  \
-    TYPE *NAME = (TYPE *)(void *)msg->raw
-
-/*
  *   Register a new group of topics,
  * all topics have a hash (id) and a callback (parse)
  */

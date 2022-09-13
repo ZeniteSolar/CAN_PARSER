@@ -30,7 +30,7 @@ static void parse_mic_state(can_msg_t *msg)
 }
 static void parse_mic_motor(can_msg_t *msg)
 {
-    CAN_DECLARE_MSG_OF_TYPE(can_mic19_motor_msg_t, mic_motor, msg);
+    can_mic19_motor_msg_t *mic_motor = (can_mic19_motor_msg_t *)msg->raw;
 
     test_mic.signature = mic_motor->signature;
     test_mic.motor.motor_on = mic_motor->motor.motor_on;
@@ -60,7 +60,8 @@ struct test_mswi_t
 
 static void parse_mswi_motor(can_msg_t *msg)
 {
-    CAN_DECLARE_MSG_OF_TYPE(can_mswi19_motor_msg_t, mswi_motor, msg);
+    can_mswi19_motor_msg_t *mswi_motor = (can_mswi19_motor_msg_t *)msg->raw;
+
     test_mswi.signature = mswi_motor->signature;
     test_mswi.d = mswi_motor->d;
     test_mswi.i = mswi_motor->i;
