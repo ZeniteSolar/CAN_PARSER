@@ -1,5 +1,11 @@
 #include <stdio.h>
-#include "can_parser.h"
+#include <can_parser.h>
+
+__attribute__((weak)) void can_handle_timeout(uint8_t signature)
+{
+
+}
+
 
 void can_parse_topics(const can_topics_t *topics, can_msg_t *msg)
 {
