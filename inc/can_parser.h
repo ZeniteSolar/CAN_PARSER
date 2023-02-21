@@ -1,5 +1,16 @@
 #include <can_parser_types.h>
 
+/**
+ * Some Debuging prints, replace by the specific printf function of the microcontroller
+*/
+#ifndef DB_WARN
+    #define DB_WARN(...) printf(__VA_ARGS__)
+#endif
+
+#ifndef DB_WARN
+    #define DB_WARN(...) printf(__VA_ARGS__)
+#endif
+
 typedef struct
 {
     uint8_t id;
