@@ -13,5 +13,5 @@ jobs:
         ./update_libs.sh -f && make tests
     - name: Run tests
       run: |
-        ./tests
+        tests/run_all_tests.sh
       
