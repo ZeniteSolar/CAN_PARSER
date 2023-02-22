@@ -1,5 +1,11 @@
 #include <stdio.h>
-#include "can_parser.h"
+#include <can_parser.h>
+
+__attribute__((weak)) void can_handle_timeout(uint8_t signature)
+{
+
+}
+
 
 void can_parse_topics(const can_topics_t *topics, can_msg_t *msg)
 {
@@ -29,10 +35,12 @@ void can_parser(can_parser_t *parser, can_msg_t *msg)
             can_parse_topics(parser->module[i].topics, msg);
             break; /*messages only have one module*/
         }
+#ifdef DEBUG
         if (i == (parser->size - 1))
         {
-            printf("Unrecognized module! of signature %d", msg->signature);
+            DB_WARN("Unrecognized module! of signature %d", msg->signature);
         }
+#endif
     }
 }
 
@@ -49,7 +57,9 @@ void can_check_timeout(can_parser_t *parser, uint32_t *time_without_messages, co
 
     if (++*time_without_messages >= module->timeout * parser->frequency)
     {
-        printf("timeout of module with signature %d\n", module->signature);
+#ifdef DEBUG
+        DB_ERROR("timeout of module with signature %d\n", module->signature);
+#endif
         *time_without_messages = 0;
         can_handle_timeout(module->signature);
     }
