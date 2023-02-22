@@ -1,4 +1,6 @@
+SILENT = @
 CC = gcc
+AR = ar
 
 # Compiler flags to help with better code quality
 CFLAGS = -Wall -Wextra
@@ -36,22 +38,43 @@ CFLAGS += -std=gnu18
 CFLAGS += -Werror=switch
 CFLAGS += -Werror=implicit-fallthrough=4
 
+BIN_DIR = bin/
+SOURCES_DIR = src/
+INCLUDES_DIR = inc/
+SUBDIRS = tests/
 
-can_ids.h : .lib_version
-	
-can_parse.h : .lib_version
-	
-.PHONY : tests 
+BINARY = libcan_parser.a
+SOURCES = $(shell find ./$(SOURCES_DIR) -type f -name \*.c)
+OBJS    =   $(patsubst $(SOURCES_DIR)/%,$(BIN_DIR)/%,$(SOURCES:.c=.o))
+INCLUDES = $(INCLUDES_DIR)/$(shell find ./inc -type f -name \*.h)
 
-SOURCES = can_ids.h can_parser.h tests.c can_parser.c
-TARGET = tests
+LIB_VERSION_FILE = .lib_version
 
-$(TARGET) : $(SOURCES)
-	$(CC)  $(SOURCES) -I./ $(CFLAGS) -o $(TARGET)
+$(BIN_DIR)/$(BINARY) : $(OBJS)
+	mkdir -p $(BIN_DIR)
+	$(SILENT) $(AR) rcs $@ $<
 
+$(OBJS) : $(SOURCES) $(INCLUDES)
+	$(SILENT) $(CC) -c $< $(CFLAGS) -I./$(INCLUDES_DIR) -o $@
 
-.PHONY update:
-
-.lib_version : update
+#download include files
+$(INCLUDES) : $(LIB_VERSION_FILE)
 	./update_libs.sh
 
+.PHONY: clean
+
+clean :
+	$(SILENT) for i in $(SUBDIRS);\
+	do make -C $$i clean; done
+	rm -f $(OBJS)
+	rm -f $(BIN_DIR)/$(BINARY)
+
+.PHONY: tests
+
+tests : $(BIN_DIR)/$(BINARY)
+	$(SILENT) make -C tests/
+
+.PHONY: all
+all : $(BIN_DIR)/$(BINARY)
+	$(SILENT) for i in $(SUBDIRS);\
+	do make -C $$i; done
