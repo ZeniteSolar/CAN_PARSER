@@ -1,6 +1,8 @@
 #!/bin/bash
+cd $(dirname $0)
 TESTS=$(find . -type f -executable ! -name "*.sh")
-for test in TESTS
+echo ${TESTS}
+for test in ${TESTS}
 do
-	test
+	$test
 done
