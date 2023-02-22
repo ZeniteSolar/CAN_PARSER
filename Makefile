@@ -51,6 +51,7 @@ INCLUDES = $(INCLUDES_DIR)/$(shell find ./inc -type f -name \*.h)
 LIB_VERSION_FILE = .lib_version
 
 $(BIN_DIR)/$(BINARY) : $(OBJS)
+	mkdir -p $(BIN_DIR)
 	$(SILENT) $(AR) rcs $@ $<
 
 $(OBJS) : $(SOURCES) $(INCLUDES)
